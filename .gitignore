@@ -1,0 +1,15 @@
+.DS_Store
+.agent-deck-build/
+node_modules/
+.next/
+.vercel/
+__pycache__/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+*.pem
+*.keychain
+*.tsbuildinfo
+*.mp4

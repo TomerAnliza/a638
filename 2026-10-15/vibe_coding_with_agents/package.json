@@ -1,0 +1,9 @@
+{
+  "name": "solitaire",
+  "private": true,
+  "description": "סוליטייר קלונדייק ב-HTML רגיל. בהמשך עוברים ל-Next.js ול-Supabase.",
+  "scripts": {
+    "start": "python3 -m http.server 8765 --directory src",
+    "test": "node --test tests/"
+  }
+}

@@ -1,0 +1,191 @@
+/* מידות הכול נגזרות מרוחב הקלף --w, כך שהלוח מתכווץ יפה גם בטלפון */
+:root {
+  --w: min(11.4vw, 96px);
+  --h: calc(var(--w) * 1.42);
+  --gap: calc(var(--w) * 0.14);
+  --down: calc(var(--w) * 0.2);   /* היסט בין קלפים הפוכים בטור */
+  --up: calc(var(--w) * 0.36);    /* היסט בין קלפים גלויים בטור */
+  --fan: calc(var(--w) * 0.28);   /* פריסת הערימה במשיכה של שלושה */
+
+  --felt: #1f6243;
+  --felt-deep: #0f3d27;
+  --ink: #f1efe2;
+  --muted: #b2c9b5;
+  --chip: rgba(6, 28, 17, .34);
+  --chip-hover: rgba(6, 28, 17, .52);
+  --card: #fbf8f0;
+  --card-edge: #d6cfbf;
+  --black: #1b1c21;
+  --red: #b3202c;
+  --back: #7d1d2b;
+  --back-line: rgba(250, 226, 190, .32);
+  --brass: #e2b85e;
+  --brass-ink: #2b1e06;
+  --slot: rgba(241, 239, 226, .22);
+  --shadow: rgba(3, 18, 10, .45);
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; }
+
+body {
+  min-height: 100vh;
+  padding: 12px 16px 48px;
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Rubik, Arial, sans-serif;
+  background: radial-gradient(ellipse at 50% 20%, var(--felt) 0%, var(--felt-deep) 100%) fixed;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ---------- שורת כלים ---------- */
+.bar {
+  max-width: calc(7 * var(--w) + 6 * var(--gap));
+  margin: 0 auto 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+.bar h1 { margin: 0; font-size: 1.5rem; letter-spacing: .02em; }
+.stats { margin: 0; color: var(--muted); font-size: .95rem; }
+.stats b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.dot { opacity: .5; margin: 0 2px; }
+.tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-inline-start: auto; }
+
+button, select {
+  font: inherit;
+  color: var(--ink);
+  background: var(--chip);
+  border: 1px solid var(--slot);
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+button:hover:not(:disabled), select:hover { background: var(--chip-hover); }
+button:disabled { opacity: .4; cursor: default; }
+button:focus-visible, select:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+#btn-auto, #btn-win-new { background: var(--brass); color: var(--brass-ink); border-color: transparent; font-weight: 600; }
+#btn-auto:hover:not(:disabled), #btn-win-new:hover:not(:disabled) { background: #edc977; }
+.mode { color: var(--muted); font-size: .9rem; display: inline-flex; align-items: center; gap: 6px; }
+select { padding: 5px 8px; }
+select option { color: #111; }
+
+/* ---------- הלוח ---------- */
+#board { max-width: calc(7 * var(--w) + 6 * var(--gap)); margin: 0 auto; }
+
+.top {
+  display: grid;
+  grid-template-columns: repeat(7, var(--w));
+  gap: var(--gap);
+  margin-bottom: calc(var(--gap) * 2);
+}
+.top .gap { display: none; }
+.top #stock { grid-column: 1; }
+.top #waste { grid-column: 2; }
+/* ארבע הקרנות בעמודות 4 עד 7, בצד הרחוק מהחבילה */
+.top .foundation[data-index="0"] { grid-column: 4; }
+.top .foundation[data-index="1"] { grid-column: 5; }
+.top .foundation[data-index="2"] { grid-column: 6; }
+.top .foundation[data-index="3"] { grid-column: 7; }
+
+.tableau {
+  display: grid;
+  grid-template-columns: repeat(7, var(--w));
+  gap: var(--gap);
+  align-items: start;
+}
+
+/* מקום לקלף: מסגרת עדינה כשאין בו קלפים */
+.pile {
+  position: relative;
+  width: var(--w);
+  height: var(--h);
+  border-radius: calc(var(--w) * .1);
+  border: 2px solid var(--slot);
+}
+.tableau .pile { height: auto; }
+.pile.foundation::before {
+  content: attr(data-sym);
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  font-size: calc(var(--w) * .5);
+  color: var(--slot);
+}
+#stock { cursor: pointer; }
+#stock.empty::after {
+  content: "↻";
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  font-size: calc(var(--w) * .5);
+  color: var(--muted);
+}
+/* יעד חוקי בזמן גרירה */
+.pile.drop-ok { border-color: var(--brass); box-shadow: 0 0 0 3px rgba(226, 184, 94, .35); }
+
+/* ---------- קלף ---------- */
+.card {
+  position: absolute;
+  left: 0; top: 0;
+  width: var(--w);
+  height: var(--h);
+  border-radius: calc(var(--w) * .1);
+  touch-action: none;
+  box-shadow: 0 1px 2px var(--shadow);
+}
+.card.up {
+  background: var(--card);
+  border: 1px solid var(--card-edge);
+  cursor: grab;
+}
+.card.up.black { color: var(--black); }
+.card.up.red { color: var(--red); }
+.card .corner {
+  position: absolute; top: calc(var(--w) * .06); left: calc(var(--w) * .09);
+  font-size: calc(var(--w) * .27);
+  font-weight: 700; line-height: 1.05; text-align: center;
+}
+.card .pip {
+  position: absolute; right: calc(var(--w) * .1); bottom: calc(var(--w) * .04);
+  font-size: calc(var(--w) * .55); line-height: 1;
+}
+/* גב הקלף: דוגמת מעוינים */
+.card.down {
+  background-color: var(--back);
+  background-image:
+    repeating-linear-gradient(45deg, var(--back-line) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(-45deg, var(--back-line) 0 1px, transparent 1px 8px);
+  border: calc(var(--w) * .05) solid var(--card);
+}
+.card.drag-hidden { visibility: hidden; }
+.card.nope { animation: nope .28s; }
+@keyframes nope {
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+/* הקלפים שנגררים: מרחפים אחרי האצבע או העכבר */
+.ghost { position: fixed; z-index: 50; pointer-events: none; }
+.ghost .card { box-shadow: 0 8px 18px var(--shadow); cursor: grabbing; }
+
+/* ---------- חלון ניצחון ---------- */
+.overlay {
+  position: fixed; inset: 0; z-index: 100;
+  display: grid; place-items: center;
+  background: rgba(3, 18, 10, .62);
+}
+.overlay[hidden] { display: none; }
+.dialog {
+  background: var(--felt-deep);
+  border: 2px solid var(--brass);
+  border-radius: 14px;
+  padding: 24px 32px;
+  text-align: center;
+  box-shadow: 0 16px 40px var(--shadow);
+}
+.dialog h2 { margin: 0 0 8px; font-size: 2rem; color: var(--brass); }
+.dialog p { margin: 0 0 16px; color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .card.nope { animation: none; }
+}

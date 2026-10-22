@@ -1,0 +1,10 @@
+{
+  "hebrew-enforcer": {
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "echo '{\"injectSteps\": [{\"ephemeralMessage\": \"תזכורת: ענה תמיד אך ורק בעברית, וחשוב בעברית בלבד. לעולם אל תתחיל משפט או בוליט באנגלית אלא רפד במילה עברית כדי שכיווניות ה-RTL לא תתהפך.\"}]}'"
+      }
+    ]
+  }
+}

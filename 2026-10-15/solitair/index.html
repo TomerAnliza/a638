@@ -1,0 +1,1126 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>סוליטר קלונדייק</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Rubik:wght@400;500;600&display=swap">
+<style>
+/* פריסה: שולחן לבד אחד לכל רוחב המסך, שורת מצב וכלים מעליו, שבעה טורים שנמדדים לפי הרוחב והגובה */
+:root {
+  --felt: #1f6243;
+  --felt-deep: #0f3d27;
+  --felt-ink: #f1efe2;
+  --felt-muted: #b2c9b5;
+  --felt-line: rgba(241, 239, 226, .24);
+  --chip: rgba(6, 28, 17, .32);
+  --chip-hover: rgba(6, 28, 17, .5);
+  --toast: #0b2c1c;
+  --card: #fbf8f0;
+  --card-edge: #d6cfbf;
+  --ink-black: #1b1c21;
+  --ink-red: #b3202c;
+  --back: #7d1d2b;
+  --back-line: rgba(250, 226, 190, .30);
+  --brass: #e2b85e;
+  --brass-ink: #2b1e06;
+  --brass-glow: rgba(226, 184, 94, .55);
+  --shadow: rgba(3, 18, 10, .45);
+  --font-display: "Frank Ruhl Libre", "David", "Times New Roman", serif;
+  --font-ui: "Rubik", "Arial Hebrew", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --felt: #133f2a; --felt-deep: #071f13; --felt-ink: #e6e7d9; --felt-muted: #90a894;
+    --felt-line: rgba(230, 231, 217, .18); --chip: rgba(0, 0, 0, .3); --chip-hover: rgba(0, 0, 0, .48);
+    --toast: #04170c; --card: #ebe6da; --card-edge: #bfb7a6; --ink-black: #17181c; --ink-red: #a81e2a;
+    --back: #5f1521; --back-line: rgba(240, 210, 170, .24); --brass: #d4a94f; --brass-ink: #241904;
+    --brass-glow: rgba(212, 169, 79, .5); --shadow: rgba(0, 0, 0, .6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --felt: #133f2a; --felt-deep: #071f13; --felt-ink: #e6e7d9; --felt-muted: #90a894;
+  --felt-line: rgba(230, 231, 217, .18); --chip: rgba(0, 0, 0, .3); --chip-hover: rgba(0, 0, 0, .48);
+  --toast: #04170c; --card: #ebe6da; --card-edge: #bfb7a6; --ink-black: #17181c; --ink-red: #a81e2a;
+  --back: #5f1521; --back-line: rgba(240, 210, 170, .24); --brass: #d4a94f; --brass-ink: #241904;
+  --brass-glow: rgba(212, 169, 79, .5); --shadow: rgba(0, 0, 0, .6);
+  color-scheme: dark;
+}
+
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+html { height: 100%; touch-action: manipulation; }
+body {
+  margin: 0;
+  min-height: 100%;
+  color: var(--felt-ink);
+  font: 400 14px/1.4 var(--font-ui);
+  background-color: var(--felt-deep);
+  /* לבד: גרעין עדין מעל מעבר אור מהמרכז לשוליים */
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E"),
+    radial-gradient(120% 90% at 50% 18%, var(--felt) 0%, var(--felt-deep) 100%);
+  background-attachment: fixed;
+}
+
+.table {
+  max-width: 1000px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin-inline: auto;
+  padding-inline: 16px;
+  padding-block: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---------- שורת מצב ---------- */
+.bar { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 24px; }
+.brand h1 {
+  margin: 0;
+  font: 900 clamp(1.8rem, 4.4vw, 2.5rem)/1 var(--font-display);
+  color: var(--brass);
+  letter-spacing: .01em;
+  text-wrap: balance;
+}
+.brand p { margin: .35rem 0 0; font-size: .8rem; color: var(--felt-muted); }
+.brand b { font-weight: 500; color: var(--felt-ink); font-variant-numeric: tabular-nums; }
+.stats { display: flex; gap: 20px; margin: 0; }
+.stats div { display: flex; flex-direction: column; gap: 3px; }
+.stats dt { font-size: .7rem; color: var(--felt-muted); letter-spacing: .04em; }
+.stats dd { margin: 0; min-width: 3.4ch; font: 500 1.2rem/1 var(--font-ui); font-variant-numeric: tabular-nums; }
+
+/* ---------- כלים ---------- */
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.controls .spacer { flex: 1; }
+.btn {
+  font: 500 .875rem/1 var(--font-ui);
+  color: var(--felt-ink);
+  background: var(--chip);
+  border: 1px solid var(--felt-line);
+  border-radius: 6px;
+  padding: .58rem .9rem;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, opacity .15s;
+}
+.btn:hover:not(:disabled) { background: var(--chip-hover); }
+.btn:focus-visible, .seg button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn.primary { background: var(--brass); color: var(--brass-ink); border-color: transparent; }
+.btn.primary:hover:not(:disabled) { background: var(--brass); filter: brightness(1.07); }
+.btn.armed { background: var(--back); color: var(--felt-ink); border-color: var(--back-line); }
+.btn.auto { border-color: var(--brass); color: var(--brass); animation: glow 1.6s ease-in-out infinite; }
+@keyframes glow { 50% { box-shadow: 0 0 0 4px var(--brass-glow); } }
+.seg { display: inline-flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--felt-muted); }
+.seg-group { display: inline-flex; border: 1px solid var(--felt-line); border-radius: 6px; overflow: hidden; }
+.seg button {
+  font: 500 .82rem/1 var(--font-ui);
+  color: var(--felt-ink);
+  background: transparent;
+  border: 0;
+  padding: .58rem .75rem;
+  cursor: pointer;
+}
+.seg button + button { border-inline-start: 1px solid var(--felt-line); }
+.seg button[aria-pressed="true"] { background: var(--felt-ink); color: var(--felt-deep); }
+
+/* ---------- השולחן ---------- */
+.board {
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.slot {
+  position: absolute; left: 0; top: 0;
+  width: var(--cw); height: var(--ch);
+  border-radius: var(--r);
+  border: 1.5px solid var(--felt-line);
+  display: grid; place-items: center;
+  color: var(--felt-line);
+  font: 700 calc(var(--cw) * .42)/1 var(--font-display);
+  touch-action: none;
+}
+.slot-waste { border-color: transparent; }
+.slot-stock { cursor: pointer; color: var(--felt-muted); }
+.slot-stock svg { width: 42%; opacity: 0; transition: opacity .2s; }
+.slot-stock.can-recycle svg { opacity: .9; }
+.slot.hint, .slot.target { border-color: var(--brass); box-shadow: 0 0 0 2px var(--brass), 0 0 16px 2px var(--brass-glow); }
+
+.card {
+  position: absolute; left: 0; top: 0;
+  width: var(--cw); height: var(--ch);
+  direction: ltr;
+  touch-action: none;
+  cursor: grab;
+  perspective: calc(var(--cw) * 8);
+  transition: transform .26s cubic-bezier(.22, .8, .3, 1);
+}
+.card:not(.up) { cursor: default; }
+.card.dragging { transition: none; cursor: grabbing; }
+.inner {
+  position: absolute; inset: 0;
+  transform-style: preserve-3d;
+  transition: transform .34s cubic-bezier(.3, .7, .3, 1);
+}
+.card:not(.up) .inner { transform: rotateY(180deg); }
+.face, .back {
+  position: absolute; inset: 0;
+  border-radius: var(--r);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  box-shadow: 0 1px 2px var(--shadow);
+}
+.face {
+  background: var(--card);
+  border: 1px solid var(--card-edge);
+  color: var(--ink-black);
+  overflow: hidden;
+}
+.card.red .face { color: var(--ink-red); }
+.face svg { display: block; width: 100%; height: 100%; }
+.face .rank { font-family: var(--font-display); font-weight: 700; }
+.face .court { font-family: var(--font-display); font-weight: 900; }
+/* גב הקלף: מסגרת קרטון בהירה, שתי הצלבות אלכסוניות על בורדו, וקו זהב פנימי */
+.back {
+  transform: rotateY(180deg);
+  border: calc(var(--cw) * .055) solid var(--card);
+  background-color: var(--back);
+  background-image:
+    repeating-linear-gradient(45deg, var(--back-line) 0 1px, transparent 1px calc(var(--cw) * .075)),
+    repeating-linear-gradient(-45deg, var(--back-line) 0 1px, transparent 1px calc(var(--cw) * .075));
+}
+.back::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--cw) * .035);
+  border: 1px solid var(--back-line);
+  border-radius: calc(var(--r) * .5);
+}
+.card.dragging .face { box-shadow: 0 14px 24px -8px var(--shadow); }
+.card.hint .face, .card.target .face { box-shadow: 0 0 0 2px var(--brass), 0 0 16px 2px var(--brass-glow); }
+.card.hint.up:not(.dragging) { animation: lift 1.6s ease-in-out; }
+@keyframes lift { 25%, 75% { translate: 0 -4px; } }
+.card.nope { animation: nope .32s; }
+@keyframes nope { 20% { translate: -4px 0; } 40% { translate: 4px 0; } 60% { translate: -3px 0; } 80% { translate: 2px 0; } }
+.board.instant .card, .board.instant .inner { transition: none !important; }
+
+/* ---------- תחתית ---------- */
+.foot {
+  margin-top: auto;
+  display: flex; flex-wrap: wrap; justify-content: space-between;
+  gap: 6px 18px;
+  font-size: .78rem;
+  color: var(--felt-muted);
+  font-variant-numeric: tabular-nums;
+}
+kbd {
+  font: 500 .72rem/1 var(--font-ui);
+  color: var(--felt-ink);
+  border: 1px solid var(--felt-line);
+  border-radius: 4px;
+  padding: 2px 5px;
+}
+
+.toast {
+  position: fixed;
+  inset-inline: 0;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  width: fit-content;
+  max-width: calc(100% - 32px);
+  margin-inline: auto;
+  padding: .65rem 1rem;
+  border-radius: 8px;
+  background: var(--toast);
+  color: var(--felt-ink);
+  font-size: .875rem;
+  box-shadow: 0 8px 24px var(--shadow);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .2s, transform .2s;
+  pointer-events: none;
+  z-index: 3200;
+}
+.toast.show { opacity: 1; transform: none; }
+
+/* ---------- ניצחון ---------- */
+#fx { position: fixed; inset: 0; z-index: 3000; cursor: pointer; }
+.win {
+  position: fixed; inset: 0; z-index: 3100;
+  display: grid; place-items: center;
+  padding: 16px;
+  pointer-events: none;
+}
+.win-card {
+  pointer-events: auto;
+  position: relative;
+  width: min(340px, 100%);
+  padding: 34px 28px 26px;
+  border-radius: 16px;
+  background: var(--card);
+  color: var(--ink-black);
+  text-align: center;
+  box-shadow: inset 0 0 0 7px var(--card), inset 0 0 0 8px var(--back), 0 28px 60px -12px var(--shadow);
+  animation: rise .55s cubic-bezier(.2, .8, .2, 1) both;
+}
+@keyframes rise { from { opacity: 0; transform: translateY(24px) scale(.96); } }
+.corner {
+  position: absolute;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  direction: ltr;
+  color: var(--ink-red);
+  font: 700 1.15rem/1 var(--font-display);
+}
+.corner svg { width: 14px; height: 14px; }
+.corner.tl { top: 16px; left: 18px; }
+.corner.br { bottom: 16px; right: 18px; transform: rotate(180deg); }
+.win-card .eyebrow { margin: 0; font-size: .78rem; color: var(--back); letter-spacing: .03em; }
+.win-card h2 { margin: .3rem 0 1.1rem; font: 900 2.6rem/1 var(--font-display); color: var(--back); text-wrap: balance; }
+.win-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 .9rem; }
+.win-stats div { display: flex; flex-direction: column; gap: 4px; }
+.win-stats dt { font-size: .72rem; color: #6d655a; }
+.win-stats dd { margin: 0; font: 600 1.25rem/1 var(--font-ui); font-variant-numeric: tabular-nums; }
+.win-card .record { min-height: 1.2em; margin: 0 0 1.1rem; font-size: .82rem; color: var(--ink-red); }
+.win-card .btn.primary { padding: .75rem 1.4rem; font-size: .95rem; }
+
+@media (max-width: 520px) {
+  .stats { gap: 14px; }
+  .stats dd { font-size: 1.05rem; }
+  .btn, .seg button { padding: .5rem .66rem; font-size: .8rem; }
+  .seg-label { display: none; }
+  .foot .keys { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card, .inner, .toast { transition: none !important; }
+  .btn.auto, .card.hint, .card.nope, .win-card { animation: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ספרייט צורות: עלה, לב, יהלום, תלתן -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="s-spade" viewBox="0 0 100 100"><path fill="currentColor" d="M50 4C42 18 26 30 16 40C6 50 4 58 4 64C4 76 14 84 26 84C35 84 42 80 47 73C46 83 42 90 34 96L66 96C58 90 54 83 53 73C58 80 65 84 74 84C86 84 96 76 96 64C96 58 94 50 84 40C74 30 58 18 50 4Z"/></symbol>
+  <symbol id="s-heart" viewBox="0 0 100 100"><path fill="currentColor" d="M50 92C46 86 36 77 24 66C12 55 4 45 4 31C4 17 14 7 27 7C37 7 45 13 50 22C55 13 63 7 73 7C86 7 96 17 96 31C96 45 88 55 76 66C64 77 54 86 50 92Z"/></symbol>
+  <symbol id="s-diamond" viewBox="0 0 100 100"><path fill="currentColor" d="M50 3C60 20 72 36 88 50C72 64 60 80 50 97C40 80 28 64 12 50C28 36 40 20 50 3Z"/></symbol>
+  <symbol id="s-club" viewBox="0 0 100 100"><g fill="currentColor"><circle cx="50" cy="29" r="19"/><circle cx="27" cy="57" r="19"/><circle cx="73" cy="57" r="19"/><path d="M38 40H62V62H38Z"/><path d="M54 55C54 75 58 87 67 96H33C42 87 46 75 46 55Z"/></g></symbol>
+</svg>
+
+<div class="table">
+  <header class="bar">
+    <div class="brand">
+      <h1>סוליטר</h1>
+      <p>קלונדייק · חלוקה <b id="dealNo">—</b> · <span id="dealMode">שליפת קלף אחד</span></p>
+    </div>
+    <dl class="stats">
+      <div><dt>זמן</dt><dd id="time">0:00</dd></div>
+      <div><dt>מהלכים</dt><dd id="moves">0</dd></div>
+      <div><dt>ניקוד</dt><dd id="score">0</dd></div>
+    </dl>
+  </header>
+
+  <nav class="controls" aria-label="פעולות משחק">
+    <button id="new" class="btn primary" type="button">חלוקה חדשה</button>
+    <button id="restart" class="btn" type="button">מההתחלה</button>
+    <button id="undo" class="btn" type="button" disabled>ביטול</button>
+    <button id="hint" class="btn" type="button">רמז</button>
+    <button id="auto" class="btn auto" type="button" hidden>סיים אוטומטית</button>
+    <span class="spacer"></span>
+    <div class="seg" role="group" aria-label="כמה קלפים לשלוף">
+      <span class="seg-label">שליפה</span>
+      <span class="seg-group">
+        <button id="draw1" type="button" aria-pressed="true">קלף אחד</button>
+        <button id="draw3" type="button" aria-pressed="false">שלושה</button>
+      </span>
+    </div>
+  </nav>
+
+  <main id="board" class="board" aria-label="שולחן המשחק"></main>
+
+  <footer class="foot">
+    <span id="record">שוחקו 0 · נוצחו 0</span>
+    <span class="keys">מקלדת: <kbd>Z</kbd> ביטול · <kbd>H</kbd> רמז · <kbd>D</kbd> שליפה · <kbd>N</kbd> חלוקה חדשה</span>
+  </footer>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<canvas id="fx" hidden></canvas>
+
+<div id="win" class="win" hidden>
+  <div class="win-card" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+    <span class="corner tl">A<svg viewBox="0 0 100 100"><use href="#s-heart"/></svg></span>
+    <span class="corner br">A<svg viewBox="0 0 100 100"><use href="#s-heart"/></svg></span>
+    <p class="eyebrow">כל 52 הקלפים בבסיסים</p>
+    <h2 id="winTitle">ניצחת!</h2>
+    <dl class="win-stats">
+      <div><dt>זמן</dt><dd id="wTime">0:00</dd></div>
+      <div><dt>מהלכים</dt><dd id="wMoves">0</dd></div>
+      <div><dt>ניקוד</dt><dd id="wScore">0</dd></div>
+    </dl>
+    <p id="wRecord" class="record"></p>
+    <button id="again" class="btn primary" type="button">חלוקה חדשה</button>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+// ---------- קבועים ----------
+const SUIT_KEYS = ['spade', 'heart', 'diamond', 'club'];
+const RANK_TXT = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+const K_GAME = 'klondike.game.v1';
+const K_STATS = 'klondike.stats.v1';
+const K_PREFS = 'klondike.prefs.v1';
+// מיקומי הסמלים על קלפי 2–10, ביחידות של קלף 100×140
+const PIPS = {
+  2: [[50, 46], [50, 120]],
+  3: [[50, 46], [50, 83], [50, 120]],
+  4: [[31, 46], [69, 46], [31, 120], [69, 120]],
+  5: [[31, 46], [69, 46], [50, 83], [31, 120], [69, 120]],
+  6: [[31, 46], [69, 46], [31, 83], [69, 83], [31, 120], [69, 120]],
+  7: [[31, 46], [69, 46], [50, 64.5], [31, 83], [69, 83], [31, 120], [69, 120]],
+  8: [[31, 46], [69, 46], [50, 64.5], [31, 83], [69, 83], [50, 101.5], [31, 120], [69, 120]],
+  9: [[31, 46], [69, 46], [31, 70.7], [69, 70.7], [50, 83], [31, 95.3], [69, 95.3], [31, 120], [69, 120]],
+  10: [[31, 46], [69, 46], [50, 58.3], [31, 70.7], [69, 70.7], [31, 95.3], [69, 95.3], [50, 107.7], [31, 120], [69, 120]],
+};
+const SUIT_PATHS = [
+  'M50 4C42 18 26 30 16 40C6 50 4 58 4 64C4 76 14 84 26 84C35 84 42 80 47 73C46 83 42 90 34 96L66 96C58 90 54 83 53 73C58 80 65 84 74 84C86 84 96 76 96 64C96 58 94 50 84 40C74 30 58 18 50 4Z',
+  'M50 92C46 86 36 77 24 66C12 55 4 45 4 31C4 17 14 7 27 7C37 7 45 13 50 22C55 13 63 7 73 7C86 7 96 17 96 31C96 45 88 55 76 66C64 77 54 86 50 92Z',
+  'M50 3C60 20 72 36 88 50C72 64 60 80 50 97C40 80 28 64 12 50C28 36 40 20 50 3Z',
+  'M38 40H62V62H38Z M54 55C54 75 58 87 67 96H33C42 87 46 75 46 55Z',
+];
+const RECYCLE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M19.5 3.5v4.5H15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+const suitOf = id => (id / 13) | 0;
+const rankOf = id => (id % 13) + 1;
+const isRed = id => suitOf(id) === 1 || suitOf(id) === 2;
+const $ = sel => document.querySelector(sel);
+const board = $('#board');
+const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+
+function load(key) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; } }
+function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch { /* אחסון חסום — ממשיכים בלי */ } }
+
+// ---------- מצב ----------
+let S = null;          // מצב המשחק הנוכחי
+let hist = [];         // תמונות מצב לביטול
+let drag = null;       // גרירה פעילה
+let busy = false;      // חלוקה או השלמה אוטומטית באמצע
+let L = null;          // מידות הפריסה
+let facesCompact = null;
+let zTimer = 0, hintTimer = 0, toastTimer = 0;
+const prefs = Object.assign({ draw: 1 }, load(K_PREFS));
+const stats = Object.assign({ played: 0, won: 0, bestTime: null, bestScore: null }, load(K_STATS));
+stats.played = Math.max(stats.played, stats.won);
+const els = [], faces = [], pos = [];
+const lift = new Set();
+const slots = { found: [], tab: [] };
+
+// ---------- ערבוב וחלוקה ----------
+function mulberry32(a) {
+  return () => {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function deal(seed, draw) {
+  const rnd = mulberry32(seed);
+  const deck = Array.from({ length: 52 }, (_, i) => i);
+  for (let i = 51; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+  const g = {
+    seed, draw, stock: [], waste: [], found: [[], [], [], []], tab: [[], [], [], [], [], [], []],
+    up: Array(52).fill(0), moves: 0, score: 0, elapsed: 0, passes: 0, counted: false, won: false,
+  };
+  let k = 0;
+  // חלוקה בשורות, כמו ליד שולחן: שורה אחר שורה, הקלף האחרון בכל טור פתוח
+  for (let r = 0; r < 7; r++) for (let c = r; c < 7; c++) { const id = deck[k++]; g.tab[c].push(id); if (r === c) g.up[id] = 1; }
+  g.stock = deck.slice(k);
+  return g;
+}
+
+// ---------- חוקים ----------
+const pileOf = loc => loc.type === 'stock' ? S.stock : loc.type === 'waste' ? S.waste : loc.type === 'found' ? S.found[loc.i] : S.tab[loc.i];
+function locate(id) {
+  let i = S.stock.indexOf(id); if (i >= 0) return { type: 'stock', idx: i };
+  i = S.waste.indexOf(id); if (i >= 0) return { type: 'waste', idx: i };
+  for (let f = 0; f < 4; f++) { i = S.found[f].indexOf(id); if (i >= 0) return { type: 'found', i: f, idx: i }; }
+  for (let c = 0; c < 7; c++) { i = S.tab[c].indexOf(id); if (i >= 0) return { type: 'tab', i: c, idx: i }; }
+  return null;
+}
+function groupAt(loc) {
+  const p = pileOf(loc);
+  if (loc.type === 'stock') return null;
+  if (loc.type === 'tab') return S.up[p[loc.idx]] ? p.slice(loc.idx) : null;
+  return loc.idx === p.length - 1 ? [p[loc.idx]] : null;
+}
+function canOnTab(id, c) {
+  const p = S.tab[c];
+  if (!p.length) return rankOf(id) === 13;
+  const t = p[p.length - 1];
+  return !!S.up[t] && isRed(t) !== isRed(id) && rankOf(t) === rankOf(id) + 1;
+}
+function canOnFound(id, f) {
+  const p = S.found[f];
+  if (!p.length) return rankOf(id) === 1;
+  const t = p[p.length - 1];
+  return suitOf(t) === suitOf(id) && rankOf(id) === rankOf(t) + 1;
+}
+function foundFor(id) {
+  for (let f = 0; f < 4; f++) {
+    const p = S.found[f];
+    if (p.length && suitOf(p[0]) === suitOf(id)) return canOnFound(id, f) ? f : -1;
+  }
+  return rankOf(id) === 1 ? S.found.findIndex(p => !p.length) : -1;
+}
+function tabFor(id, loc) {
+  let empty = -1;
+  for (let c = 0; c < 7; c++) {
+    if (loc.type === 'tab' && loc.i === c) continue;
+    if (!canOnTab(id, c)) continue;
+    if (S.tab[c].length) return c;
+    if (empty < 0) empty = c;
+  }
+  // מלך שכבר עומד בראש טור לא עובר לטור ריק אחר — זה לא משנה כלום
+  if (empty >= 0 && !(loc.type === 'tab' && loc.idx === 0)) return empty;
+  return -1;
+}
+const canAuto = () => !S.won && !S.stock.length && !S.waste.length && S.tab.every(p => p.every(id => S.up[id]));
+
+// ---------- מהלכים ----------
+const snap = () => JSON.stringify({ stock: S.stock, waste: S.waste, found: S.found, tab: S.tab, up: S.up, moves: S.moves, score: S.score, passes: S.passes });
+function pushHist() { hist.push(snap()); if (hist.length > 300) hist.shift(); }
+
+function moveCards(src, dst) {
+  pushHist();
+  const from = pileOf(src);
+  const ids = from.splice(src.idx);
+  (dst.type === 'found' ? S.found[dst.i] : S.tab[dst.i]).push(...ids);
+  // ניקוד בשיטת חלונות: מהפסולת לטור +5, לבסיס +10, חזרה מבסיס −15, חשיפת קלף +5
+  if (src.type === 'waste') S.score += dst.type === 'found' ? 10 : 5;
+  else if (src.type === 'tab' && dst.type === 'found') S.score += 10;
+  else if (src.type === 'found' && dst.type === 'tab') S.score -= 15;
+  if (src.type === 'tab' && from.length && !S.up[from[from.length - 1]]) { S.up[from[from.length - 1]] = 1; S.score += 5; }
+  S.moves++;
+  changed();
+}
+
+function drawStock() {
+  if (busy || S.won) return;
+  if (!S.stock.length && !S.waste.length) { toast('החפיסה ריקה.'); return; }
+  pushHist();
+  if (!S.stock.length) {
+    // הפיכת הפסולת בחזרה לחפיסה, באותו סדר
+    S.stock = S.waste.reverse();
+    S.waste = [];
+    S.stock.forEach(id => { S.up[id] = 0; });
+    S.passes++;
+    if (S.draw === 1) S.score -= 100;
+  } else {
+    const n = Math.min(S.draw, S.stock.length);
+    for (let k = 0; k < n; k++) { const id = S.stock.pop(); S.up[id] = 1; S.waste.push(id); }
+  }
+  S.moves++;
+  changed();
+}
+
+function flipTop(c) {
+  const p = S.tab[c], id = p[p.length - 1];
+  pushHist(); S.up[id] = 1; S.score += 5; S.moves++;
+  changed();
+}
+
+function undo() {
+  if (busy || S.won || !hist.length) return;
+  clearHints();
+  Object.assign(S, JSON.parse(hist.pop()));
+  persist(); render(); hud();
+}
+
+function changed() {
+  S.score = Math.max(0, S.score);
+  if (!S.counted) { S.counted = true; stats.played++; save(K_STATS, stats); }
+  const justWon = !S.won && S.found.every(p => p.length === 13);
+  if (justWon) {
+    S.won = true;
+    stats.won++;
+    stats.played = Math.max(stats.played, stats.won);
+    S.recordTime = stats.bestTime == null || S.elapsed < stats.bestTime;
+    S.recordScore = stats.bestScore == null || S.score > stats.bestScore;
+    if (S.recordTime) stats.bestTime = S.elapsed;
+    if (S.recordScore) stats.bestScore = S.score;
+    save(K_STATS, stats);
+  }
+  clearHints();
+  persist(); render(); hud();
+  if (justWon) setTimeout(showWin, reduced.matches ? 0 : 420);
+}
+
+function tapCard(loc, group) {
+  const id = group[0];
+  if (loc.type === 'found') return false;
+  if (group.length === 1) {
+    const f = foundFor(id);
+    if (f >= 0) { moveCards(loc, { type: 'found', i: f }); return true; }
+  }
+  const c = tabFor(id, loc);
+  if (c >= 0) { moveCards(loc, { type: 'tab', i: c }); return true; }
+  return false;
+}
+
+// ---------- רמז ----------
+function findHint() {
+  const tops = [];
+  if (S.waste.length) tops.push({ type: 'waste', idx: S.waste.length - 1 });
+  S.tab.forEach((p, c) => { if (p.length) tops.push({ type: 'tab', i: c, idx: p.length - 1 }); });
+  for (const loc of tops) {
+    const id = pileOf(loc)[loc.idx];
+    if (!S.up[id]) continue;
+    const f = foundFor(id);
+    if (f >= 0) return { from: [id], to: { type: 'found', i: f } };
+  }
+  for (let c = 0; c < 7; c++) {
+    const p = S.tab[c], i = p.findIndex(id => S.up[id]);
+    if (i < 0 || (i === 0 && rankOf(p[0]) === 13)) continue;
+    for (let d = 0; d < 7; d++) {
+      if (d === c || !canOnTab(p[i], d)) continue;
+      if (S.tab[d].length || i > 0) return { from: p.slice(i), to: { type: 'tab', i: d } };
+    }
+  }
+  if (S.waste.length) {
+    const id = S.waste[S.waste.length - 1], c = tabFor(id, { type: 'waste' });
+    if (c >= 0) return { from: [id], to: { type: 'tab', i: c } };
+  }
+  if (S.stock.length || S.waste.length) return { stock: true };
+  return null;
+}
+function hint() {
+  if (busy || S.won) return;
+  clearHints();
+  const h = findHint();
+  if (!h) { toast('אין מהלך זמין. אפשר לבטל כמה מהלכים או לחלק מחדש.'); return; }
+  if (h.stock) {
+    const top = S.stock[S.stock.length - 1];
+    (top != null ? els[top] : slots.stock).classList.add('hint');
+    toast(S.stock.length ? 'אין מהלך גלוי על השולחן. שלוף קלף מהחפיסה.' : 'החפיסה נגמרה. הקש עליה כדי להפוך את הפסולת.');
+  } else {
+    h.from.forEach(id => els[id].classList.add('hint'));
+    const p = h.to.type === 'found' ? S.found[h.to.i] : S.tab[h.to.i];
+    (p.length ? els[p[p.length - 1]] : (h.to.type === 'found' ? slots.found[h.to.i] : slots.tab[h.to.i])).classList.add('hint');
+  }
+  hintTimer = setTimeout(clearHints, 1700);
+}
+function clearHints() {
+  clearTimeout(hintTimer);
+  board.querySelectorAll('.hint').forEach(n => n.classList.remove('hint'));
+}
+
+// ---------- השלמה אוטומטית ----------
+function autoComplete() {
+  if (busy || !canAuto()) return;
+  busy = true;
+  const step = () => {
+    let best = null;
+    S.tab.forEach((p, c) => {
+      if (!p.length) return;
+      const id = p[p.length - 1], f = foundFor(id);
+      if (f >= 0 && (!best || rankOf(id) < rankOf(best.id))) best = { id, c, f };
+    });
+    if (!best) { busy = false; hud(); return; }
+    busy = false;
+    moveCards({ type: 'tab', i: best.c, idx: S.tab[best.c].length - 1 }, { type: 'found', i: best.f });
+    if (S.won) return;
+    busy = true;
+    setTimeout(step, reduced.matches ? 0 : 85);
+  };
+  step();
+}
+
+// ---------- פריסה וציור ----------
+function computeLayout() {
+  const W = board.clientWidth;
+  const top = board.getBoundingClientRect().top + window.scrollY;
+  const roomH = window.innerHeight - top - 44;
+  const gap = Math.max(4, Math.min(14, W * 0.014));
+  // הקלף נמדד לפי הרוחב, ומוגבל גם לפי הגובה כדי שטור ארוך ייכנס למסך
+  const cw = Math.max(36, Math.min(118, (W - gap * 6) / 7, roomH / 6.4));
+  const ch = cw * 1.4;
+  const ox = (W - (cw * 7 + gap * 6)) / 2;
+  const compact = cw < 74;
+  L = {
+    W, gap, cw, ch, compact,
+    colX: i => ox + (6 - i) * (cw + gap), // מימין לשמאל: טור 0 בקצה הימני
+    tabY: ch + Math.max(12, gap * 1.6),
+    downOff: ch * 0.1,
+    upOff: ch * (compact ? 0.3 : 0.26),
+    fan: cw * 0.3,
+    availH: Math.max(roomH, ch * 4.4),
+  };
+  board.style.setProperty('--cw', cw + 'px');
+  board.style.setProperty('--ch', ch + 'px');
+  board.style.setProperty('--r', (cw * 0.075) + 'px');
+  if (compact !== facesCompact) buildFaces(compact);
+}
+
+function colOffsets(p) {
+  let nD = 0, nU = 0;
+  for (let i = 0; i < p.length - 1; i++) S.up[p[i]] ? nU++ : nD++;
+  let uOff = L.upOff;
+  const need = L.tabY + nD * L.downOff + nU * uOff + L.ch;
+  if (need > L.availH && nU > 0) uOff = Math.max(L.ch * 0.19, (L.availH - L.tabY - L.ch - nD * L.downOff) / nU);
+  return { dOff: L.downOff, uOff };
+}
+
+const place = (n, x, y) => { n.style.transform = `translate3d(${x}px,${y}px,0)`; };
+
+function render() {
+  if (drag && drag.on) return;
+  computeLayout();
+  const { colX, ch } = L;
+  const P = [];
+  S.stock.forEach((id, i) => { const d = Math.min(3, (i / 8) | 0); P[id] = { x: colX(0) - d, y: -d, z: 1 + i, pile: 's' }; });
+  const wn = S.waste.length;
+  S.waste.forEach((id, i) => {
+    // בשליפת שלושה: הקלף העליון צמוד לחפיסה, והקודמים מציצים משמאלו כך שהערך שלהם גלוי
+    const k = S.draw === 3 ? Math.min(2, wn - 1 - i) : 0;
+    P[id] = { x: colX(1) - k * L.fan, y: 0, z: 1 + i, pile: 'w' };
+  });
+  S.found.forEach((p, f) => p.forEach((id, i) => { P[id] = { x: colX(3 + f), y: 0, z: 1 + i, pile: 'f' + f }; }));
+  let bottom = L.tabY + ch;
+  S.tab.forEach((p, c) => {
+    const { dOff, uOff } = colOffsets(p);
+    let y = L.tabY;
+    p.forEach((id, i) => { P[id] = { x: colX(c), y, z: 1 + i, pile: 't' + c }; y += S.up[id] ? uOff : dOff; });
+    if (p.length) bottom = Math.max(bottom, P[p[p.length - 1]].y + ch);
+  });
+  board.style.height = Math.ceil(bottom + 6) + 'px';
+
+  let flying = false;
+  for (let id = 0; id < 52; id++) {
+    const p = P[id], el = els[id], prev = pos[id];
+    place(el, p.x, p.y);
+    el.dataset.z = p.z;
+    // קלף שעובר ערימה טס מעל כולם עד שהוא נוחת
+    if (prev && (prev.pile !== p.pile || lift.has(id))) { el.style.zIndex = 600 + p.z; flying = true; }
+    else el.style.zIndex = p.z;
+    el.classList.toggle('up', !!S.up[id]);
+    pos[id] = p;
+  }
+  lift.clear();
+  if (flying) {
+    clearTimeout(zTimer);
+    zTimer = setTimeout(() => { els.forEach(el => { if (!el.classList.contains('dragging')) el.style.zIndex = el.dataset.z; }); }, 340);
+  }
+
+  place(slots.stock, colX(0), 0);
+  slots.stock.classList.toggle('can-recycle', !S.stock.length && S.waste.length > 0);
+  place(slots.waste, colX(1), 0);
+  slots.found.forEach((n, f) => place(n, colX(3 + f), 0));
+  slots.tab.forEach((n, c) => place(n, colX(c), L.tabY));
+}
+
+function renderInstant() {
+  board.classList.add('instant');
+  render();
+  void board.offsetWidth;
+  board.classList.remove('instant');
+}
+
+// ---------- בניית הקלפים ----------
+function faceSVG(id, compact) {
+  const s = suitOf(id), r = rankOf(id), t = RANK_TXT[r], href = '#s-' + SUIT_KEYS[s];
+  const use = (x, y, size, flip) =>
+    `<use href="${href}" x="${x - size / 2}" y="${y - size / 2}" width="${size}" height="${size}"${flip ? ` transform="rotate(180 ${x} ${y})"` : ''}/>`;
+  const tight = t === '10' ? ' letter-spacing="-2.5"' : '';
+  let out = '<svg viewBox="0 0 100 140" aria-hidden="true">';
+  if (compact) {
+    // קלף קטן: מספר גדול בפינה וצורה אחת גדולה במרכז
+    out += `<text class="rank" x="7" y="36" font-size="36"${tight}>${t}</text>` + use(80, 22, 26) + use(50, 92, 54);
+  } else {
+    out += `<text class="rank" x="8" y="27" font-size="25"${tight}>${t}</text>` + use(83, 18, 18);
+    if (r === 1) out += use(50, 83, s === 0 ? 52 : 40);
+    else if (r > 10) {
+      out += '<rect x="18" y="36" width="64" height="94" rx="3" fill="currentColor" fill-opacity=".06" stroke="currentColor" stroke-width="1.2"/>'
+        + '<rect x="21.5" y="39.5" width="57" height="87" rx="1.5" fill="none" stroke="currentColor" stroke-width=".6" stroke-opacity=".55"/>'
+        + `<text class="court" x="50" y="90" font-size="50" text-anchor="middle">${t}</text>` + use(50, 106, 18);
+    } else out += PIPS[r].map(([x, y]) => use(x, y, 17, y > 83)).join('');
+  }
+  return out + '</svg>';
+}
+function buildFaces(compact) {
+  facesCompact = compact;
+  for (let id = 0; id < 52; id++) faces[id].innerHTML = faceSVG(id, compact);
+}
+function buildBoard() {
+  const mk = (cls, html = '') => {
+    const n = document.createElement('div');
+    n.className = 'slot ' + cls;
+    n.innerHTML = html;
+    board.appendChild(n);
+    return n;
+  };
+  slots.stock = mk('slot-stock', RECYCLE_SVG);
+  slots.waste = mk('slot-waste');
+  for (let f = 0; f < 4; f++) slots.found.push(mk('slot-found', 'A'));
+  for (let c = 0; c < 7; c++) slots.tab.push(mk('slot-tab'));
+  for (let id = 0; id < 52; id++) {
+    const el = document.createElement('div');
+    el.className = 'card' + (isRed(id) ? ' red' : '');
+    el.dataset.id = id;
+    el.innerHTML = '<div class="inner"><div class="face"></div><div class="back"></div></div>';
+    board.appendChild(el);
+    els[id] = el;
+    faces[id] = el.querySelector('.face');
+  }
+}
+
+// ---------- חלוקה מונפשת ----------
+function dealAnimation() {
+  computeLayout();
+  board.classList.add('instant');
+  for (let id = 0; id < 52; id++) {
+    const el = els[id];
+    el.classList.remove('up', 'hint', 'nope', 'target');
+    el.style.visibility = '';
+    el.style.zIndex = 1;
+    place(el, L.colX(0), 0);
+    pos[id] = { pile: 's' };
+  }
+  void board.offsetWidth;
+  board.classList.remove('instant');
+  if (reduced.matches) { render(); return; }
+  busy = true;
+  const order = [];
+  for (let r = 0; r < 7; r++) for (let c = r; c < 7; c++) order.push(S.tab[c][r]);
+  order.forEach((id, k) => {
+    els[id].style.transitionDelay = (k * 30) + 'ms';
+    els[id].firstChild.style.transitionDelay = (k * 30 + 220) + 'ms';
+  });
+  render();
+  setTimeout(() => {
+    order.forEach(id => { els[id].style.transitionDelay = ''; els[id].firstChild.style.transitionDelay = ''; });
+    busy = false;
+  }, order.length * 30 + 560);
+}
+
+// ---------- גרירה והקשה ----------
+function overlap(a, x, y, w, h) {
+  const ix = Math.min(a.x + a.w, x + w) - Math.max(a.x, x);
+  const iy = Math.min(a.y + a.h, y + h) - Math.max(a.y, y);
+  return ix > 0 && iy > 0 ? ix * iy : 0;
+}
+function dropTarget() {
+  const id0 = drag.group[0], p0 = pos[id0];
+  const r = { x: p0.x + drag.dx, y: p0.y + drag.dy, w: L.cw, h: L.ch };
+  let best = null, bestA = 0;
+  const consider = (dst, x, y, w, h) => { const a = overlap(r, x, y, w, h); if (a > bestA) { bestA = a; best = dst; } };
+  if (drag.group.length === 1 && drag.loc.type !== 'found') {
+    for (let f = 0; f < 4; f++) if (canOnFound(id0, f)) consider({ type: 'found', i: f }, L.colX(3 + f), 0, L.cw, L.ch);
+  }
+  for (let c = 0; c < 7; c++) {
+    if ((drag.loc.type === 'tab' && drag.loc.i === c) || !canOnTab(id0, c)) continue;
+    const p = S.tab[c], topY = p.length ? pos[p[p.length - 1]].y : L.tabY;
+    consider({ type: 'tab', i: c }, L.colX(c), L.tabY, L.cw, topY + L.ch - L.tabY);
+  }
+  return best;
+}
+function markTarget(t) {
+  board.querySelectorAll('.target').forEach(n => n.classList.remove('target'));
+  if (!t) return;
+  const p = t.type === 'found' ? S.found[t.i] : S.tab[t.i];
+  (p.length ? els[p[p.length - 1]] : (t.type === 'found' ? slots.found[t.i] : slots.tab[t.i])).classList.add('target');
+}
+function nope(id) {
+  const el = els[id];
+  el.classList.remove('nope');
+  void el.offsetWidth;
+  el.classList.add('nope');
+}
+
+board.addEventListener('pointerdown', e => {
+  if ((e.button && e.button !== 0) || busy || S.won || drag) return;
+  const cardEl = e.target.closest('.card');
+  if (!cardEl) {
+    if (e.target.closest('.slot-stock')) { e.preventDefault(); drawStock(); }
+    return;
+  }
+  e.preventDefault();
+  const id = +cardEl.dataset.id, loc = locate(id);
+  if (loc.type === 'stock') { drawStock(); return; }
+  if (loc.type === 'tab' && !S.up[id]) {
+    if (loc.idx === S.tab[loc.i].length - 1) flipTop(loc.i);
+    return;
+  }
+  const group = groupAt(loc);
+  if (!group) return;
+  drag = { pid: e.pointerId, sx: e.clientX, sy: e.clientY, dx: 0, dy: 0, loc, group, on: false, target: null };
+  try { board.setPointerCapture(e.pointerId); } catch { /* לא נתמך — ממשיכים */ }
+});
+
+board.addEventListener('pointermove', e => {
+  if (!drag || e.pointerId !== drag.pid) return;
+  const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+  if (!drag.on) {
+    if (Math.hypot(dx, dy) < 6) return;
+    drag.on = true;
+    clearHints();
+    drag.group.forEach((id, k) => { els[id].classList.add('dragging'); els[id].style.zIndex = 2000 + k; });
+  }
+  drag.dx = dx; drag.dy = dy;
+  drag.group.forEach(id => place(els[id], pos[id].x + dx, pos[id].y + dy));
+  const t = dropTarget();
+  if ((t && t.type + t.i) !== (drag.target && drag.target.type + drag.target.i)) markTarget(t);
+  drag.target = t;
+});
+
+function endDrag(e, cancelled) {
+  if (!drag || e.pointerId !== drag.pid) return;
+  const d = drag;
+  drag = null;
+  try { board.releasePointerCapture(e.pointerId); } catch { /* כבר שוחרר */ }
+  markTarget(null);
+  d.group.forEach(id => els[id].classList.remove('dragging'));
+  if (!d.on) {
+    if (!cancelled && !tapCard(d.loc, d.group)) nope(d.group[0]);
+    return;
+  }
+  if (!cancelled && d.target) moveCards(d.loc, d.target);
+  else { d.group.forEach(id => lift.add(id)); render(); }
+}
+board.addEventListener('pointerup', e => endDrag(e, false));
+board.addEventListener('pointercancel', e => endDrag(e, true));
+board.addEventListener('contextmenu', e => e.preventDefault());
+
+// ---------- תצוגת מצב ----------
+function fmt(ms) {
+  const s = Math.floor(ms / 1000), h = (s / 3600) | 0, m = ((s % 3600) / 60) | 0, ss = s % 60;
+  return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(ss).padStart(2, '0');
+}
+function hud() {
+  $('#moves').textContent = S.moves;
+  $('#score').textContent = S.score;
+  $('#time').textContent = fmt(S.elapsed);
+  $('#dealNo').textContent = S.seed;
+  $('#dealMode').textContent = S.draw === 1 ? 'שליפת קלף אחד' : 'שליפת שלושה קלפים';
+  $('#undo').disabled = !hist.length || S.won;
+  $('#auto').hidden = !canAuto();
+  $('#draw1').setAttribute('aria-pressed', String(prefs.draw === 1));
+  $('#draw3').setAttribute('aria-pressed', String(prefs.draw === 3));
+  const pct = stats.played ? Math.round((stats.won / stats.played) * 100) : 0;
+  $('#record').textContent = `שוחקו ${stats.played} · נוצחו ${stats.won} (${pct}%) · זמן שיא ${stats.bestTime == null ? '—' : fmt(stats.bestTime)}`;
+}
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+function persist() { save(K_GAME, { S, hist: hist.slice(-200) }); }
+
+// שעון: רץ מהמהלך הראשון ועד הניצחון, ועוצר כשהלשונית מוסתרת
+let lastTick = performance.now(), sinceSave = 0;
+setInterval(() => {
+  const now = performance.now(), dt = now - lastTick;
+  lastTick = now;
+  if (!S || !S.counted || S.won || document.hidden) return;
+  S.elapsed += Math.min(dt, 1000);
+  $('#time').textContent = fmt(S.elapsed);
+  if ((sinceSave += dt) > 5000) { sinceSave = 0; persist(); }
+}, 250);
+document.addEventListener('visibilitychange', () => { if (document.hidden && S) persist(); });
+window.addEventListener('pagehide', () => { if (S) persist(); });
+
+// ---------- ניצחון: מפל הקלפים ----------
+let fx = null;
+function drawSuit(x, s, cx, cy, size) {
+  x.save();
+  x.translate(cx - size / 2, cy - size / 2);
+  x.scale(size / 100, size / 100);
+  if (s === 3) {
+    x.beginPath();
+    for (const [a, b] of [[50, 29], [27, 57], [73, 57]]) { x.moveTo(a + 19, b); x.arc(a, b, 19, 0, Math.PI * 2); }
+    x.fill();
+  }
+  x.fill(new Path2D(SUIT_PATHS[s]));
+  x.restore();
+}
+function cardImage(id, w, h, dpr) {
+  const c = document.createElement('canvas');
+  c.width = Math.ceil(w * dpr); c.height = Math.ceil(h * dpr);
+  const x = c.getContext('2d');
+  x.scale(dpr, dpr);
+  const cs = getComputedStyle(document.documentElement), tok = n => cs.getPropertyValue(n).trim();
+  x.beginPath();
+  if (x.roundRect) x.roundRect(0.5, 0.5, w - 1, h - 1, w * 0.075); else x.rect(0.5, 0.5, w - 1, h - 1);
+  x.fillStyle = tok('--card'); x.fill();
+  x.strokeStyle = tok('--card-edge'); x.lineWidth = 1; x.stroke();
+  x.fillStyle = isRed(id) ? tok('--ink-red') : tok('--ink-black');
+  x.direction = 'ltr'; x.textAlign = 'left';
+  x.font = `700 ${w * 0.27}px "Frank Ruhl Libre", serif`;
+  x.fillText(RANK_TXT[rankOf(id)], w * 0.08, h * 0.22);
+  drawSuit(x, suitOf(id), w * 0.8, h * 0.14, w * 0.2);
+  drawSuit(x, suitOf(id), w * 0.5, h * 0.62, w * 0.46);
+  return c;
+}
+function cascade() {
+  const cv = $('#fx'), dpr = Math.min(2, window.devicePixelRatio || 1);
+  const W = window.innerWidth, H = window.innerHeight;
+  cv.width = W * dpr; cv.height = H * dpr;
+  cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  cv.hidden = false;
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  const br = board.getBoundingClientRect(), cw = L.cw, ch = L.ch;
+  const queue = [];
+  for (let r = 12; r >= 0; r--) for (let f = 0; f < 4; f++) {
+    const id = S.found[f][r];
+    if (id != null) queue.push({ id, x: br.left + L.colX(3 + f), y: br.top });
+  }
+  const active = [];
+  let last = -1e9, prevT = 0;
+  fx = { running: true };
+  const frame = t => {
+    if (!fx || !fx.running) return;
+    const k = prevT ? Math.min(3, (t - prevT) / 16.67) : 1;
+    prevT = t;
+    if (queue.length && t - last > 220 && active.length < 6) {
+      const q = queue.shift();
+      last = t;
+      els[q.id].style.visibility = 'hidden';
+      active.push({
+        ...q, img: cardImage(q.id, cw, ch, dpr),
+        vx: (4 + Math.random() * 5) * (Math.random() < 0.5 ? -1 : 1),
+        vy: -(2 + Math.random() * 8),
+      });
+    }
+    for (let i = active.length - 1; i >= 0; i--) {
+      const c = active[i];
+      c.vy += 0.5 * k; c.x += c.vx * k; c.y += c.vy * k;
+      if (c.y > H - ch) { c.y = H - ch; c.vy *= -0.74; }
+      ctx.drawImage(c.img, c.x, c.y, cw, ch);  // בלי ניקוי — כל קלף משאיר שובל
+      if (c.x < -cw || c.x > W) active.splice(i, 1);
+    }
+    if (!queue.length && !active.length) { fx.running = false; return; }
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+}
+function stopFx() {
+  if (fx) fx.running = false;
+  fx = null;
+  $('#fx').hidden = true;
+  els.forEach(el => { el.style.visibility = ''; });
+}
+function showWin() {
+  $('#wTime').textContent = fmt(S.elapsed);
+  $('#wMoves').textContent = S.moves;
+  $('#wScore').textContent = S.score;
+  const rec = [];
+  if (S.recordTime && stats.won > 1) rec.push('שיא זמן חדש');
+  if (S.recordScore && stats.won > 1) rec.push('שיא ניקוד חדש');
+  $('#wRecord').textContent = rec.length ? rec.join(' · ') : (stats.won === 1 ? 'הניצחון הראשון שלך כאן.' : `ניצחון מספר ${stats.won}.`);
+  $('#win').hidden = false;
+  if (!reduced.matches) cascade();
+  $('#again').focus({ preventScroll: true });
+}
+function hideWin() { $('#win').hidden = true; }
+$('#fx').addEventListener('pointerdown', stopFx);
+
+// ---------- משחק חדש ואישור כפול ----------
+function newGame(seed, draw) {
+  stopFx(); hideWin(); clearHints();
+  if (seed == null) seed = 1 + Math.floor(Math.random() * 99999);
+  if (draw == null) draw = prefs.draw;
+  S = deal(seed, draw);
+  hist = [];
+  persist(); hud();
+  dealAnimation();
+}
+function confirmThen(btn, action) {
+  // באמצע משחק: לחיצה ראשונה מבקשת אישור, השנייה מבצעת
+  if (!S.moves || S.won || btn.dataset.armed) { disarm(btn); action(); return; }
+  btn.dataset.armed = '1';
+  btn.dataset.label = btn.textContent;
+  btn.textContent = 'לחץ שוב לאישור';
+  btn.classList.add('armed');
+  btn._t = setTimeout(() => disarm(btn), 3000);
+}
+function disarm(btn) {
+  clearTimeout(btn._t);
+  if (btn.dataset.armed) { btn.textContent = btn.dataset.label; delete btn.dataset.armed; btn.classList.remove('armed'); }
+}
+function setDraw(n) {
+  prefs.draw = n;
+  save(K_PREFS, prefs);
+  if (S.draw !== n) {
+    if (!S.moves && !S.won) newGame(S.seed, n);
+    else toast(n === 1 ? 'שליפת קלף אחד תחול מהחלוקה הבאה.' : 'שליפת שלושה קלפים תחול מהחלוקה הבאה.');
+  }
+  hud();
+}
+
+$('#new').addEventListener('click', e => confirmThen(e.currentTarget, () => newGame()));
+$('#restart').addEventListener('click', e => confirmThen(e.currentTarget, () => newGame(S.seed, S.draw)));
+$('#undo').addEventListener('click', undo);
+$('#hint').addEventListener('click', hint);
+$('#auto').addEventListener('click', autoComplete);
+$('#draw1').addEventListener('click', () => setDraw(1));
+$('#draw3').addEventListener('click', () => setDraw(3));
+$('#again').addEventListener('click', () => newGame());
+
+window.addEventListener('keydown', e => {
+  if (e.target.closest && e.target.closest('input, textarea, select')) return;
+  const mod = e.metaKey || e.ctrlKey;
+  if (e.code === 'KeyZ') { e.preventDefault(); undo(); return; }
+  if (mod || e.altKey) return;
+  if (e.code === 'KeyH') hint();
+  else if (e.code === 'KeyD' || (e.code === 'Space' && !e.target.closest('button'))) { e.preventDefault(); drawStock(); }
+  else if (e.code === 'KeyN') confirmThen($('#new'), () => newGame());
+  else if (e.code === 'KeyA') autoComplete();
+  else if (e.code === 'Escape') { stopFx(); hideWin(); }
+});
+
+let resizeRaf = 0;
+window.addEventListener('resize', () => {
+  cancelAnimationFrame(resizeRaf);
+  resizeRaf = requestAnimationFrame(() => { if (S && !busy) renderInstant(); });
+});
+
+// ---------- הפעלה ----------
+function validGame(g) {
+  if (!g || !g.S || !Array.isArray(g.S.stock) || !Array.isArray(g.S.tab) || g.S.won) return false;
+  const all = [...g.S.stock, ...g.S.waste, ...g.S.found.flat(), ...g.S.tab.flat()];
+  return all.length === 52 && new Set(all).size === 52;
+}
+function start(data) {
+  buildBoard();
+  const saved = (data && data.game) || load(K_GAME);
+  if (validGame(saved)) {
+    S = saved.S;
+    hist = Array.isArray(saved.hist) ? saved.hist : [];
+    renderInstant();
+    hud();
+  } else {
+    newGame();
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (!busy) renderInstant(); });
+}
+
+const hot = window.claude && window.claude.hot;
+if (hot && hot.snapshot) hot.snapshot(() => ({ game: { S, hist } }));
+if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
+})();
+</script>
+</body>
+</html>

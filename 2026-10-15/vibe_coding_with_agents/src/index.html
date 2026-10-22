@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>סוליטייר</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- שורת הכלים והמצב: בעברית, מימין לשמאל -->
+  <header class="bar">
+    <h1>סוליטייר</h1>
+    <p class="stats" aria-live="polite">
+      מהלכים <b id="moves">0</b>
+      <span class="dot">·</span> ניקוד <b id="score">0</b>
+      <span class="dot">·</span> זמן <b id="time">0:00</b>
+    </p>
+    <div class="tools">
+      <button id="btn-new" type="button">משחק חדש</button>
+      <button id="btn-undo" type="button">בטל מהלך</button>
+      <button id="btn-auto" type="button" hidden>השלם אוטומטית</button>
+      <label class="mode">משיכה
+        <select id="draw-mode">
+          <option value="1">קלף אחד</option>
+          <option value="3">שלושה קלפים</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <!-- הלוח עצמו משמאל לימין, כמו שולחן קלפים רגיל -->
+  <main id="board" dir="ltr" aria-label="לוח המשחק">
+    <section class="top">
+      <div class="pile" id="stock" data-pile="stock" title="משיכת קלף"></div>
+      <div class="pile" id="waste" data-pile="waste"></div>
+      <div class="gap"></div>
+      <div class="pile foundation" data-pile="foundation" data-index="0" data-sym="♠&#xFE0E;"></div>
+      <div class="pile foundation" data-pile="foundation" data-index="1" data-sym="♥&#xFE0E;"></div>
+      <div class="pile foundation" data-pile="foundation" data-index="2" data-sym="♦&#xFE0E;"></div>
+      <div class="pile foundation" data-pile="foundation" data-index="3" data-sym="♣&#xFE0E;"></div>
+    </section>
+    <section class="tableau" id="tableau"></section>
+  </main>
+
+  <!-- חלון ניצחון -->
+  <div id="win" class="overlay" hidden>
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="win-title">
+      <h2 id="win-title">ניצחת!</h2>
+      <p id="win-summary"></p>
+      <button id="btn-win-new" type="button">משחק חדש</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
