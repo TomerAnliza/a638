@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>הוצאה לפי קטגוריה — עוגה, דונאט, עמודות ומפת חום (d3)</title>
+<script src="./d3.v7.min.js"></script>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --accent: #2a78d6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --page: #0d0d0d;
+      --surface: #1a1a19;
+      --ink: #f0efec;
+      --ink-2: #c3c2b7;
+      --muted: #898781;
+      --grid: #2c2c2a;
+      --axis: #383835;
+      --border: rgba(255,255,255,0.10);
+      --accent: #3987e5;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 28px 32px 48px;
+    background: var(--page); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 14px; line-height: 1.5;
+  }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+  h2 { font-size: 15px; font-weight: 600; margin: 0 0 2px; }
+  .sub { color: var(--ink-2); margin: 0 0 18px; }
+  .note { color: var(--ink-2); font-size: 12.5px; margin: 0 0 10px; }
+  .ltr { direction: ltr; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* שורת פילטרים אחת מעל כל התרשימים */
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 18px; align-items: center;
+    padding: 12px 16px; margin-bottom: 18px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  }
+  .controls label { display: flex; align-items: center; gap: 8px; color: var(--ink-2); }
+  .controls select, .controls input[type=checkbox] { font: inherit; accent-color: var(--accent); }
+  .controls select { padding: 4px 8px; border-radius: 6px; border: 1px solid var(--axis); background: var(--surface); color: var(--ink); }
+
+  /* שורת מדדים */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; }
+  .kpi .label { color: var(--ink-2); font-size: 12.5px; }
+  .kpi .value { font-size: 26px; font-weight: 600; margin-top: 2px; }
+  .kpi .delta { color: var(--muted); font-size: 12px; }
+
+  /* מקרא צבע משותף */
+  .legend { display: flex; align-items: center; gap: 12px; margin: 0 0 18px; color: var(--ink-2); font-size: 12.5px; }
+  .legend .ramp { width: 260px; height: 12px; border-radius: 6px; border: 1px solid var(--border); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 18px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px 14px; min-width: 0; }
+  .card.wide { grid-column: 1 / -1; }
+  .card .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 999px; margin-inline-start: 8px; vertical-align: middle; }
+  .badge.rec { background: #006300; color: #fff; }
+  @media (prefers-color-scheme: dark) { .badge.rec { background: #0ca30c; color: #0b0b0b; } }
+  .badge.warn { background: var(--grid); color: var(--ink-2); }
+  .badge[hidden] { display: none; }
+
+  svg { display: block; width: 100%; height: auto; overflow: visible; }
+  svg text { font-family: inherit; }
+  .axis text { fill: var(--muted); font-size: 11.5px; }
+  .axis line, .axis path { stroke: var(--grid); }
+  .axis .domain { stroke: var(--axis); }
+  .cat-label { fill: var(--ink-2); font-size: 12.5px; }
+  .val-label { fill: var(--ink-2); font-size: 11.5px; }
+  .leader { fill: none; stroke: var(--axis); stroke-width: 1; }
+  .slice-label { fill: var(--ink-2); font-size: 11px; }
+  .center-value { fill: var(--ink); font-size: 24px; font-weight: 600; }
+  .center-label { fill: var(--ink-2); font-size: 12px; }
+
+  /* מפת חום: אריח לכל קטגוריה */
+  .tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .tile {
+    aspect-ratio: 1 / 1; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between;
+    cursor: default; transition: transform .12s ease; min-width: 0;
+  }
+  .tile:hover { transform: scale(1.03); }
+  .tile .name { font-weight: 600; font-size: 13px; line-height: 1.2; word-break: break-word; }
+  .tile .val { font-size: 15px; font-weight: 600; }
+  .tile .rank { font-size: 11px; opacity: .8; }
+
+  /* מקרא לעוגה ולדונאט */
+  .pie-wrap { display: block; }
+  .pie-legend { list-style: none; margin: 10px 0 0; padding: 0; font-size: 12px; color: var(--ink-2); display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 16px; }
+  .pie-legend li { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+  .pie-legend .sw { width: 11px; height: 11px; border-radius: 3px; flex: none; border: 1px solid var(--border); }
+  .pie-legend .pct { margin-inline-start: auto; color: var(--muted); }
+
+  /* טבלה (התאום הנגיש של התרשימים) */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 7px 10px; border-bottom: 1px solid var(--grid); text-align: right; }
+  th { color: var(--ink-2); font-weight: 600; }
+  td.n, th.n { text-align: left; direction: ltr; font-variant-numeric: tabular-nums; }
+  tr:hover td { background: var(--page); }
+
+  .rec-box { background: var(--surface); border: 1px solid var(--border); border-inline-start: 4px solid var(--accent); border-radius: 10px; padding: 14px 18px; margin: 18px 0; }
+  .rec-box ul { margin: 6px 0 0; padding-inline-start: 18px; }
+  .rec-box li { margin: 4px 0; }
+
+  .tooltip {
+    position: fixed; pointer-events: none; z-index: 10; display: none;
+    background: var(--ink); color: var(--page); padding: 8px 10px; border-radius: 8px; font-size: 12px; line-height: 1.45;
+    box-shadow: 0 4px 16px rgba(0,0,0,.18); max-width: 260px;
+  }
+  .tooltip b { font-size: 13px; }
+  footer { color: var(--muted); font-size: 12px; margin-top: 24px; }
+</style>
+</head>
+<body>
+
+<h1>הקשר בין קטגוריה להוצאה</h1>
+<p class="sub">אותם <span id="ncat">13</span> ערכים בארבע צורות: עמודות, מפת חום, עוגה ודונאט. צבע אחד משותף לכולן — <b>חם = הוצאה גבוהה, קר = נמוכה</b>. מקור: <span class="ltr">Cleaned_Spending_Data.xlsx</span>, <span id="meta"></span>.</p>
+
+<div class="controls">
+  <label>מדד:
+    <select id="measure">
+      <option value="sum">סכום ההוצאה (Total Spent)</option>
+      <option value="count">מספר עסקאות</option>
+      <option value="median">חציון לעסקה</option>
+      <option value="mean">ממוצע לעסקה</option>
+    </select>
+  </label>
+  <label><input type="checkbox" id="nocar"> ללא הפריט <span class="ltr">car</span> (141 רכישות רכב, 86% מכלל ההוצאה)</label>
+  <label><input type="checkbox" id="noshop"> ללא הקטגוריה <span class="ltr">Shopping</span> (כל 560 העסקאות שלה, כולל car)</label>
+</div>
+
+<div class="kpis">
+  <div class="kpi"><div class="label">סך ההוצאה בתצוגה</div><div class="value num" id="kpi-total"></div><div class="delta" id="kpi-total-d"></div></div>
+  <div class="kpi"><div class="label">עסקאות בתצוגה</div><div class="value num" id="kpi-count"></div><div class="delta" id="kpi-count-d"></div></div>
+  <div class="kpi"><div class="label">הקטגוריה המובילה</div><div class="value" id="kpi-top"></div><div class="delta" id="kpi-top-d"></div></div>
+</div>
+
+<div class="legend">
+  <span>קר = פחות</span>
+  <div class="ramp" id="ramp"></div>
+  <span>חם = יותר</span>
+  <span id="legend-note" style="margin-inline-start:8px"></span>
+</div>
+
+<div class="grid">
+
+  <div class="card">
+    <h2>עמודות ממוינות <span class="badge rec">ההמלצה שלי</span></h2>
+    <p class="note">אורך על בסיס משותף הוא הקידוד שהעין קוראת במדויק. ממוין מהגדול לקטן; הערך בקצה כל עמודה.</p>
+    <div class="ltr"><svg id="bars"></svg></div>
+  </div>
+
+  <div class="card">
+    <h2>מפת חום — אריח לכל קטגוריה</h2>
+    <p class="note">שם הקטגוריה על האריח; הצבע הוא המדד בסולם <span id="scale-kind"></span>. טוב לדירוג במבט אחד, פחות לקריאת ערכים מדויקים.</p>
+    <div class="tiles" id="tiles"></div>
+  </div>
+
+  <div class="card">
+    <h2>עוגה <span class="badge warn" id="pie-warn" hidden>לא חלק-מתוך-שלם</span></h2>
+    <p class="note">נכונה רק לשאלה «איזה חלק מהשלם», ורק עם מעט פרוסות. פרוסות מתחת ל-2.5% לא מתויגות; המקרא והטבלה משלימים.</p>
+    <div class="pie-wrap"><div class="ltr"><svg id="pie"></svg></div><ul class="pie-legend" id="pie-legend"></ul></div>
+  </div>
+
+  <div class="card">
+    <h2>דונאט <span class="badge warn" id="donut-warn" hidden>לא חלק-מתוך-שלם</span></h2>
+    <p class="note">אותה עוגה עם חור: המרכז פנוי למספר הכולל, והקשתות קלות מעט יותר להשוואה מפרוסות משולשות.</p>
+    <div class="pie-wrap"><div class="ltr"><svg id="donut"></svg></div><ul class="pie-legend" id="donut-legend"></ul></div>
+  </div>
+
+  <div class="card wide">
+    <h2>הנתונים בטבלה</h2>
+    <p class="note">הטבלה היא התאום הנגיש של התרשימים: כל ערך שמופיע בצבע או באורך מופיע כאן כמספר.</p>
+    <table id="table"></table>
+  </div>
+</div>
+
+<div class="rec-box">
+  <b>באיזה תרשים הייתי בוחר כאן? עמודות אופקיות ממוינות.</b>
+  <ul>
+    <li><b>למה עמודות:</b> 13 קטגוריות, פערים של עד פי 1,000, והשאלה היא «מי מוציא יותר ממי». אורך על בסיס אחד משותף הוא הקידוד המדויק ביותר לעין האנושית, והמיון הופך את הדירוג לקריא בלי מאמץ.</li>
+    <li><b>למה לא עוגה:</b> עוגה עונה על «איזה חלק מהשלם», ומתפקדת עד 5–6 פרוסות. כאן Shopping היא 89% מהשלם וכל השאר פרוסות דקיקות שאי אפשר להשוות ביניהן. גם בלי car נשארות 13 פרוסות וזוויות קשות להשוואה.</li>
+    <li><b>הדונאט</b> עדיף על העוגה רק במעט: המרכז פנוי למספר הכולל, והטבעת מקלה להשוות אורכי קשת. הבעיה העקרונית זהה.</li>
+    <li><b>מפת החום</b> טובה למבט-על ולדירוג גס: העין מבחינה ב-5–7 דרגות צבע, לא ב-13. בלי סולם לוגריתמי כל האריחים חוץ מ-Shopping היו באותו כחול.</li>
+    <li><b>כלל אצבע לכיתה:</b> השוואת גדלים → עמודות. חלק מתוך שלם עם מעט חלקים → דונאט. גריד של ערכים (קטגוריה × חודש) → מפת חום. סולם צבע לבדו אינו תחליף לאורך.</li>
+  </ul>
+</div>
+
+<footer id="footer"></footer>
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const DATA = {"rows_total": 7342, "rows_dup": 9, "car_rows": 141, "date_min": "2023-01-01", "date_max": "2024-12-31", "all": {"Fitness": {"count": 587.0, "sum": 253408.68, "median": 239.66, "mean": 431.7}, "Food": {"count": 576.0, "sum": 39420.47, "median": 29.8, "mean": 68.44}, "Friend Activities": {"count": 552.0, "sum": 113341.25, "median": 132.21, "mean": 205.33}, "Gifts": {"count": 596.0, "sum": 187275.26, "median": 154.31, "mean": 314.22}, "Groceries": {"count": 587.0, "sum": 12496.74, "median": 13.75, "mean": 21.29}, "Hobbies": {"count": 531.0, "sum": 61743.43, "median": 86.75, "mean": 116.28}, "Housing and Utilities": {"count": 564.0, "sum": 656615.75, "median": 124.15, "mean": 1164.21}, "Medical/Dental": {"count": 584.0, "sum": 223273.99, "median": 356.7, "mean": 382.32}, "Personal Hygiene": {"count": 552.0, "sum": 176789.01, "median": 19.84, "mean": 320.27}, "Shopping": {"count": 560.0, "sum": 15761829.92, "median": 700.07, "mean": 28146.12}, "Subscriptions": {"count": 550.0, "sum": 13046.32, "median": 14.36, "mean": 23.72}, "Transportation": {"count": 550.0, "sum": 90750.19, "median": 63.75, "mean": 165.0}, "Travel": {"count": 553.0, "sum": 209600.26, "median": 266.09, "mean": 379.02}}, "nocar": {"Fitness": {"count": 587.0, "sum": 253408.68, "median": 239.66, "mean": 431.7}, "Food": {"count": 576.0, "sum": 39420.47, "median": 29.8, "mean": 68.44}, "Friend Activities": {"count": 552.0, "sum": 113341.25, "median": 132.21, "mean": 205.33}, "Gifts": {"count": 596.0, "sum": 187275.26, "median": 154.31, "mean": 314.22}, "Groceries": {"count": 587.0, "sum": 12496.74, "median": 13.75, "mean": 21.29}, "Hobbies": {"count": 531.0, "sum": 61743.43, "median": 86.75, "mean": 116.28}, "Housing and Utilities": {"count": 564.0, "sum": 656615.75, "median": 124.15, "mean": 1164.21}, "Medical/Dental": {"count": 584.0, "sum": 223273.99, "median": 356.7, "mean": 382.32}, "Personal Hygiene": {"count": 552.0, "sum": 176789.01, "median": 19.84, "mean": 320.27}, "Shopping": {"count": 419.0, "sum": 429036.79, "median": 394.5, "mean": 1023.95}, "Subscriptions": {"count": 550.0, "sum": 13046.32, "median": 14.36, "mean": 23.72}, "Transportation": {"count": 550.0, "sum": 90750.19, "median": 63.75, "mean": 165.0}, "Travel": {"count": 553.0, "sum": 209600.26, "median": 266.09, "mean": 379.02}}};
+
+// ---------- עזרים ----------
+const MEASURE_LABEL = { sum: "סכום ההוצאה", count: "מספר עסקאות", median: "חציון לעסקה", mean: "ממוצע לעסקה" };
+const fmtCompact = v => v >= 1e3 ? d3.format(".3~s")(v).replace("k", "K") : d3.format(",.2~f")(v);
+const fmtFull = v => d3.format(",.2f")(v);
+const fmtInt = v => d3.format(",.0f")(v);
+const fmtPct = v => d3.format(".1%")(v);
+
+// סולם צבע משותף: קר (כחול) → ניטרלי בהיר → חם (כתום/אדום)
+const warmCool = d3.interpolateRgbBasis(["#104281", "#2a78d6", "#86b6ef", "#efe6d2", "#f6a35c", "#eb6834", "#b71c1c"]);
+const textOn = color => d3.hcl(color).l > 62 ? "#0b0b0b" : "#ffffff";
+
+const tooltip = d3.select("#tooltip");
+function showTip(event, d, measure) {
+  tooltip.style("display", "block").html(
+    `<b>${d.name}</b><br>` +
+    `${MEASURE_LABEL[measure]}: ${measure === "count" ? fmtInt(d.value) : fmtFull(d.value)}<br>` +
+    `חלק מהשלם: ${fmtPct(d.share)}<br>` +
+    `<span style="opacity:.8">עסקאות ${fmtInt(d.count)} · סכום ${fmtCompact(d.sum)} · חציון ${fmtFull(d.median)}</span>`
+  );
+  moveTip(event);
+}
+function moveTip(event) {
+  const pad = 14, w = tooltip.node().offsetWidth, h = tooltip.node().offsetHeight;
+  let x = event.clientX - w - pad, y = event.clientY + pad;           // ברירת מחדל: משמאל לסמן (דף RTL)
+  if (x < 8) x = event.clientX + pad;
+  if (y + h > window.innerHeight - 8) y = event.clientY - h - pad;
+  tooltip.style("left", x + "px").style("top", y + "px");
+}
+const hideTip = () => tooltip.style("display", "none");
+
+// ---------- הכנת הנתונים לפי המצב הנבחר ----------
+function prepare(measure, nocar, noshop) {
+  const src = nocar ? DATA.nocar : DATA.all;
+  const rows = Object.entries(src).filter(([name]) => !(noshop && name === "Shopping")).map(([name, m]) => ({ name, ...m, value: m[measure] }));
+  const total = d3.sum(rows, d => d.value);
+  rows.forEach(d => d.share = d.value / total);
+  rows.sort((a, b) => d3.descending(a.value, b.value));
+  rows.forEach((d, i) => d.rank = i + 1);
+  return { rows, total };
+}
+function makeColor(rows, measure) {
+  const [lo, hi] = d3.extent(rows, d => d.value);
+  const useLog = measure !== "count" && hi / lo > 20;
+  const scale = useLog ? d3.scaleSequentialLog(warmCool).domain([lo, hi]) : d3.scaleSequential(warmCool).domain([lo, hi]);
+  return { scale, useLog };
+}
+
+// ---------- עמודות ----------
+function drawBars(rows, color, measure) {
+  const m = { top: 6, right: 70, bottom: 28, left: 150 };
+  const barH = 22, step = 32;
+  const width = 560, height = m.top + m.bottom + rows.length * step;
+  const svg = d3.select("#bars").attr("viewBox", [0, 0, width, height]);
+  svg.selectAll("*").remove();
+  const x = d3.scaleLinear().domain([0, d3.max(rows, d => d.value)]).nice().range([m.left, width - m.right]);
+  const y = d3.scaleBand().domain(rows.map(d => d.name)).range([m.top, height - m.bottom]).paddingInner(0.3);
+
+  // גריד hairline, רצוף
+  svg.append("g").attr("class", "axis")
+    .attr("transform", `translate(0,${height - m.bottom})`)
+    .call(d3.axisBottom(x).ticks(5).tickSize(-(height - m.top - m.bottom)).tickFormat(fmtCompact))
+    .call(g => g.select(".domain").remove());
+
+  const bar = (d) => {
+    const x0 = x(0), x1 = x(d.value), yy = y(d.name) + (y.bandwidth() - barH) / 2, r = Math.min(4, (x1 - x0) / 2);
+    // 4px מעוגל בקצה הנתון, ישר בבסיס
+    return `M${x0},${yy} H${x1 - r} A${r},${r} 0 0 1 ${x1},${yy + r} V${yy + barH - r} A${r},${r} 0 0 1 ${x1 - r},${yy + barH} H${x0} Z`;
+  };
+  svg.append("g").selectAll("path").data(rows, d => d.name).join("path")
+    .attr("d", bar).attr("fill", d => color(d.value))
+    .on("mousemove", (e, d) => showTip(e, d, measure)).on("mouseleave", hideTip);
+
+  svg.append("g").selectAll("text.cat-label").data(rows).join("text").attr("class", "cat-label")
+    .attr("x", m.left - 10).attr("y", d => y(d.name) + y.bandwidth() / 2).attr("dy", "0.35em").attr("text-anchor", "end")
+    .text(d => d.name);
+  svg.append("g").selectAll("text.val-label").data(rows).join("text").attr("class", "val-label")
+    .attr("x", d => x(d.value) + 6).attr("y", d => y(d.name) + y.bandwidth() / 2).attr("dy", "0.35em")
+    .text(d => measure === "count" ? fmtInt(d.value) : fmtCompact(d.value));
+}
+
+// ---------- מפת חום: אריחים ----------
+function drawTiles(rows, color, measure) {
+  const tiles = d3.select("#tiles").selectAll("div.tile").data(rows, d => d.name).join(
+    enter => {
+      const t = enter.append("div").attr("class", "tile");
+      t.append("div").attr("class", "rank");
+      t.append("div").attr("class", "name");
+      t.append("div").attr("class", "val");
+      return t;
+    }
+  );
+  tiles.order()
+    .style("background", d => color(d.value)).style("color", d => textOn(color(d.value)))
+    .on("mousemove", (e, d) => showTip(e, d, measure)).on("mouseleave", hideTip);
+  tiles.select(".rank").text(d => `#${d.rank}`);
+  tiles.select(".name").text(d => d.name);
+  tiles.select(".val").text(d => measure === "count" ? fmtInt(d.value) : fmtCompact(d.value));
+}
+
+// ---------- עוגה ודונאט ----------
+function drawPie(id, legendId, rows, color, measure, inner) {
+  const W = 600, H = 300, R = 112;
+  const svg = d3.select(id).attr("viewBox", [-W / 2, -H / 2, W, H]);
+  svg.selectAll("*").remove();
+  const pie = d3.pie().value(d => d.value).sort(null);           // rows כבר ממוין מהגדול לקטן
+  const arc = d3.arc().innerRadius(inner ? R * 0.62 : 0).outerRadius(R).cornerRadius(inner ? 3 : 0);
+  const outerArc = d3.arc().innerRadius(R * 1.12).outerRadius(R * 1.12);
+  const arcs = pie(rows);
+
+  // רווח משטח של 2px בין הפרוסות (stroke בצבע המשטח, לא מסגרת)
+  svg.append("g").selectAll("path").data(arcs).join("path")
+    .attr("d", arc).attr("fill", d => color(d.data.value))
+    .attr("stroke", getComputedStyle(document.documentElement).getPropertyValue("--surface").trim()).attr("stroke-width", 2)
+    .on("mousemove", (e, d) => showTip(e, d.data, measure)).on("mouseleave", hideTip);
+
+  // תוויות עם קווי הובלה, רק לפרוסות של 2.5% ומעלה
+  const labeled = arcs.filter(d => d.data.share >= 0.025);
+  const mid = d => (d.startAngle + d.endAngle) / 2;
+  const side = d => mid(d) < Math.PI ? 1 : -1;
+  // מניעת התנגשות אנכית בין תוויות באותו צד
+  [1, -1].forEach(s => {
+    const col = labeled.filter(d => side(d) === s).map(d => ({ d, y: outerArc.centroid(d)[1] })).sort((a, b) => a.y - b.y);
+    for (let i = 1; i < col.length; i++) if (col[i].y - col[i - 1].y < 13) col[i].y = col[i - 1].y + 13;
+    col.forEach(o => o.d.labelY = o.y);
+  });
+  const lx = d => side(d) * (R * 1.28);
+  svg.append("g").selectAll("polyline").data(labeled).join("polyline").attr("class", "leader")
+    .attr("points", d => [arc.centroid(d), [outerArc.centroid(d)[0], d.labelY], [lx(d) - side(d) * 4, d.labelY]].map(p => p.join(",")).join(" "));
+  svg.append("g").selectAll("text").data(labeled).join("text").attr("class", "slice-label")
+    .attr("x", d => lx(d)).attr("y", d => d.labelY).attr("dy", "0.35em")
+    .attr("text-anchor", d => side(d) > 0 ? "start" : "end")
+    .text(d => `${d.data.name} ${fmtPct(d.data.share)}`);
+
+  if (inner) {
+    const total = d3.sum(rows, d => d.value);
+    svg.append("text").attr("class", "center-value").attr("text-anchor", "middle").attr("dy", "-0.1em")
+      .text(measure === "count" ? fmtInt(total) : measure === "sum" ? fmtCompact(total) : fmtCompact(total / rows.length));
+    svg.append("text").attr("class", "center-label").attr("text-anchor", "middle").attr("dy", "1.4em")
+      .text(measure === "count" ? "עסקאות" : measure === "sum" ? "סך ההוצאה" : "ממוצע הקטגוריות");
+  }
+
+  // מקרא: שם, משבצת צבע ואחוז, לכל 13 הקטגוריות
+  d3.select(legendId).selectAll("li").data(rows, d => d.name).join(
+    enter => { const li = enter.append("li"); li.append("span").attr("class", "sw"); li.append("span").attr("class", "nm"); li.append("span").attr("class", "pct"); return li; }
+  ).order()
+    .on("mousemove", (e, d) => showTip(e, d, measure)).on("mouseleave", hideTip)
+    .call(li => { li.select(".sw").style("background", d => color(d.value)); li.select(".nm").text(d => d.name); li.select(".pct").text(d => fmtPct(d.share)); });
+}
+
+// ---------- טבלה ----------
+function drawTable(rows, measure) {
+  const total = d3.sum(rows, d => d.sum), n = d3.sum(rows, d => d.count);
+  const t = d3.select("#table").html("");
+  t.append("thead").append("tr").selectAll("th")
+    .data([["#", ""], ["קטגוריה", ""], ["עסקאות", "n"], ["סכום ההוצאה", "n"], ["חלק מהסכום", "n"], ["חציון לעסקה", "n"], ["ממוצע לעסקה", "n"]])
+    .join("th").attr("class", d => d[1]).text(d => d[0]);
+  t.append("tbody").selectAll("tr").data(rows).join("tr").selectAll("td")
+    .data(d => [[d.rank, "n"], [d.name, "ltr"], [fmtInt(d.count), "n"], [fmtFull(d.sum), "n"], [fmtPct(d.sum / total), "n"], [fmtFull(d.median), "n"], [fmtFull(d.mean), "n"]])
+    .join("td").attr("class", d => d[1]).text(d => d[0]);
+  t.append("tfoot").append("tr").selectAll("td")
+    .data([["", ""], ["סך הכול", ""], [fmtInt(n), "n"], [fmtFull(total), "n"], ["100%", "n"], ["", ""], ["", ""]])
+    .join("td").attr("class", d => d[1]).style("font-weight", 600).text(d => d[0]);
+}
+
+// ---------- מקרא צבע ----------
+function drawRamp(color, useLog, rows, measure) {
+  const stops = d3.range(0, 1.001, 0.1).map(t => `${warmCool(t)} ${t * 100}%`).join(", ");
+  d3.select("#ramp").style("background", `linear-gradient(to right, ${stops})`);
+  const [lo, hi] = d3.extent(rows, d => d.value);
+  d3.select("#legend-note").text(`${MEASURE_LABEL[measure]}: ${fmtCompact(lo)} עד ${fmtCompact(hi)}${useLog ? ", סולם לוגריתמי" : ", סולם ליניארי"}`);
+  d3.select("#scale-kind").text(useLog ? "לוגריתמי" : "ליניארי");
+}
+
+// ---------- KPI ----------
+function drawKpis(rows, nocar, noshop) {
+  const total = d3.sum(rows, d => d.sum), n = d3.sum(rows, d => d.count);
+  const allTotal = d3.sum(Object.values(DATA.all), d => d.sum), allN = d3.sum(Object.values(DATA.all), d => d.count);
+  const top = rows.slice().sort((a, b) => d3.descending(a.sum, b.sum))[0];
+  d3.select("#kpi-total").text(fmtCompact(total));
+  const removed = [nocar && !noshop ? "ללא car" : null, noshop ? "ללא Shopping" : null].filter(Boolean).join(", ");
+  d3.select("#kpi-total-d").text(removed ? `${removed}: ${fmtPct(total / allTotal)} מהסכום המלא (${fmtCompact(allTotal)})` : "כולל 141 רכישות רכב");
+  d3.select("#kpi-count").text(fmtInt(n));
+  d3.select("#kpi-count-d").text(removed ? `מתוך ${fmtInt(allN)}` : "כולל 9 שורות כפולות (סכומן 1,066)");
+  d3.select("#kpi-top").text(top.name);
+  d3.select("#kpi-top-d").text(`${fmtPct(top.sum / total)} מהסכום בתצוגה`);
+}
+
+// ---------- עדכון כולל ----------
+function render() {
+  const measure = d3.select("#measure").property("value");
+  const nocar = d3.select("#nocar").property("checked");
+  const noshop = d3.select("#noshop").property("checked");
+  const { rows } = prepare(measure, nocar, noshop);
+  const { scale, useLog } = makeColor(rows, measure);
+  d3.select("#ncat").text(rows.length);
+  drawRamp(scale, useLog, rows, measure);
+  drawKpis(rows, nocar, noshop);
+  drawBars(rows, scale, measure);
+  drawTiles(rows, scale, measure);
+  drawPie("#pie", "#pie-legend", rows, scale, measure, false);
+  drawPie("#donut", "#donut-legend", rows, scale, measure, true);
+  drawTable(rows, measure);
+  const partWhole = measure === "sum" || measure === "count";
+  d3.select("#pie-warn").attr("hidden", partWhole ? true : null);
+  d3.select("#donut-warn").attr("hidden", partWhole ? true : null);
+}
+const params = new URLSearchParams(location.search);
+if (params.has("measure")) d3.select("#measure").property("value", params.get("measure"));
+if (params.get("nocar") === "1") d3.select("#nocar").property("checked", true);
+if (params.get("noshop") === "1") d3.select("#noshop").property("checked", true);
+d3.select("#measure").on("change", render);
+d3.select("#nocar").on("change", render);
+d3.select("#noshop").on("change", render);
+d3.select("#meta").text(`${fmtInt(DATA.rows_total)} עסקאות, ${DATA.date_min} עד ${DATA.date_max}`);
+d3.select("#footer").text(`נבנה ב-d3 v7 (קובץ מקומי, ללא רשת). הנתונים חושבו על כל ${fmtInt(DATA.rows_total)} השורות כולל ${DATA.rows_dup} הכפולות; המטבע אינו מוגדר בקובץ. 5 בנובמבר 2026.`);
+render();
+</script>
+</body>
+</html>
