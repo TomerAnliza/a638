@@ -13,3 +13,13 @@ venv/
 *.keychain
 *.tsbuildinfo
 *.mp4
+
+# Local teaching files and lesson preparation metadata
+*.key
+*מערך שיעור*
+*הדרכה למרצה*
+*הנחיות להעברת התרגולים*
+הדגמות/
+.sources.json
+.lec_folder-state.json
+.presentation-backups*/
