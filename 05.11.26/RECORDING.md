@@ -1,7 +1,7 @@
 # הקלטת השיעור — 5.11.2026
 
-- [צפייה בצילום המרצה ב־Zoom](https://zoom.us/rec/play/RIIiFN7XhlvXZeCiv907WJs-jHKBTGllBWK6ZQqn6TmdFv3P-kfJywcKKqqh3k7yPskNymvUNhbxhaz7.TMxSO0SMBN4cKGvH?autoplay=true)
-- [צפייה במצגת ובשיתוף המסך ב־Zoom](https://zoom.us/rec/play/zw_EoIdNiVa4zBgdmHSr03WvHIiDvv0YhmOZbJw6AJn51j6SRe46WGruGC0W4-UrO7x9xw1xrfQ02w.8zM04iKO5FQlc3_L?autoplay=true)
+- [צילום המרצה](https://zoom.us/rec/play/vu9s7I7F7IhzPIzLdsSH70aDc3e9kF1XeqDglsH6zGdB5ugrRAxXNLDXR56ccl6Tv-Rmz71Zov-i52cn.zq566cSc21YweVwW?autoplay=true)
+- [השיעור — מצגות ושיתוף המסך](https://zoom.us/rec/play/YVKA1xzd5TseF3IXdvJsFMrySvajtPX0sSZl4bZzNjpN5PLeCek--JQW4PA2-SBAXIUvNCumG51oWg._TleVW01LsrDsOg2?autoplay=true)
 - [האזנה להקלטת השמע ב־Zoom](https://zoom.us/rec/play/oxqHr_DKYXJrWxujzXbueQeYGegisrWTGZvaaGHj-YaIOPH6ZneiWqKwXA77o_nlyNn3NbwtP8qbApqG.qN5xpjo-y_L62Hjh?autoplay=true)
 - [פתיחת כל קובצי ההקלטה ב־Zoom](https://zoom.us/rec/share/qI44W2Zx34q61Ma2d7pujh8TENKGq781_H5svcfhVjEBWnrCIQ8MB_V-NGpgIvYd.Mem6fB0uTyfxkDtS)
 
