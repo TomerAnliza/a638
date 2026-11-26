@@ -1,0 +1,17 @@
+[
+  {
+    "project_name": "בניית אתר",
+    "tasks": [
+      { "task_id": 1, "title": "עיצוב לוגו", "status": "done" },
+      { "task_id": 2, "title": "כתיבת קוד", "status": "in_progress" }
+    ],
+    "team_lead": "אורן"
+  },
+  {
+    "project_name": "קמפיין פסח",
+    "tasks": [
+      { "task_id": 15, "title": "אישור תקציב", "status": "pending" }
+    ],
+    "urgent": true
+  }
+]
